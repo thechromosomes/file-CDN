@@ -1,0 +1,1959 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Your Browser Information</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      /* Works in Chrome, Edge, Safari */
+      ::-webkit-scrollbar {
+        width: 12px; /* width of vertical scrollbar */
+        height: 12px; /* height of horizontal scrollbar */
+      }
+
+      ::-webkit-scrollbar-track {
+        background: #ddd; /* Track color */
+        border-radius: 10px;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: linear-gradient(to right, #83f006, #f87800);
+        border-radius: 10px;
+      }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: rgb(0, 0, 0);
+        min-height: 100vh;
+        color: #333;
+        line-height: 1.4;
+      }
+
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        background: rgb(0, 0, 0);
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(10px);
+      }
+
+      h1 {
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 2.5em;
+        background: linear-gradient(to right, #83f006, #f87800);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text; /* for Firefox */
+        color: transparent;
+      }
+
+      .info-grid {
+        display: block;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 20px;
+      }
+
+      .full-width {
+        grid-column: 1 / -1;
+      }
+
+      .info-card {
+        background: rgb(0, 255, 0);
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+        margin-bottom: 10px;
+      }
+
+      .info-card:hover {
+        transform: translateY(-3px);
+      }
+
+      .card-title {
+        font-size: 1.4em;
+        color: #000000;
+        margin-bottom: 15px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        padding-bottom: 10px;
+      }
+
+      .card-title::before {
+        margin-right: 10px;
+        font-size: 1.2em;
+      }
+
+      .info-item {
+        margin-bottom: 8px;
+        padding: 8px 12px;
+        border-radius: 5px;
+        background: #b3ff00;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+      }
+
+      .label {
+        font-weight: bold;
+        color: #000000;
+        min-width: 150px;
+        margin-right: 10px;
+        flex-shrink: 0;
+      }
+
+      .value {
+        color: #020202;
+        font-family: "Courier New", monospace;
+        word-break: break-all;
+        flex: 1;
+        font-size: 0.9em;
+      }
+
+      .loading {
+        color: #718096;
+        font-style: italic;
+      }
+
+      .error {
+        color: #e53e3e;
+        font-style: italic;
+      }
+
+      .success {
+        color: #38a169;
+      }
+
+      .warning {
+        color: #d69e2e;
+      }
+
+      .refresh-btn {
+        background: rgb(0, 255, 76);
+        color: rgb(0, 0, 0);
+        border: none;
+        padding: 12px 24px;
+        border-radius: 25px;
+        cursor: pointer;
+        font-size: 1em;
+        font-weight: bold;
+        margin: 20px auto;
+        display: block;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+      }
+
+      .refresh-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+      }
+
+      .permissions-grid,
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 10px;
+        margin-top: 15px;
+      }
+
+      .permission-item,
+      .feature-item {
+        padding: 8px 12px;
+        border-radius: 20px;
+        text-align: center;
+        font-size: 0.9em;
+        font-weight: bold;
+      }
+
+      .granted,
+      .supported {
+        background: #c6f6d5;
+        color: #22543d;
+      }
+
+      .denied,
+      .not-supported {
+        background: #fed7d7;
+        color: #742a2a;
+      }
+
+      .prompt {
+        background: #feebc8;
+        color: #7b341e;
+      }
+
+      .partial {
+        background: #bee3f8;
+        color: #2a4365;
+      }
+
+      .plugin-list {
+        max-height: 200px;
+        overflow-y: auto;
+        background: #b3ff00;
+        border-radius: 5px;
+        padding: 10px;
+        margin-top: 10px;
+      }
+
+      .plugin-item {
+        padding: 5px 0;
+        font-size: 0.9em;
+      }
+
+      .mime-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 5px;
+        font-size: 0.8em;
+        max-height: 300px;
+        overflow-y: auto;
+        background: #b3ff00;
+        padding: 10px;
+        border-radius: 5px;
+      }
+
+      .storage-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 10px;
+      }
+
+      .storage-item {
+        background: #b3ff00;
+        padding: 10px;
+        border-radius: 5px;
+        text-align: center;
+      }
+
+      .emoji-nav::before {
+        content: "🧭";
+      }
+      .emoji-basic::before {
+        content: "🌐";
+      }
+      .emoji-hardware::before {
+        content: "⚙️";
+      }
+      .emoji-screen::before {
+        content: "🖥️";
+      }
+      .emoji-network::before {
+        content: "📡";
+      }
+      .emoji-location::before {
+        content: "📍";
+      }
+      .emoji-media::before {
+        content: "📹";
+      }
+      .emoji-permissions::before {
+        content: "🔐";
+      }
+      .emoji-features::before {
+        content: "🚀";
+      }
+      .emoji-plugins::before {
+        content: "🔌";
+      }
+      .emoji-storage::before {
+        content: "💾";
+      }
+      .emoji-performance::before {
+        content: "⚡";
+      }
+      .emoji-security::before {
+        content: "🛡️";
+      }
+      .emoji-experimental::before {
+        content: "🧪";
+      }
+      .emoji-webgl::before {
+        content: "🎮";
+      }
+      .emoji-audio::before {
+        content: "🎵";
+      }
+      .emoji-sensors::before {
+        content: "📱";
+      }
+      .emoji-clipboard::before {
+        content: "📋";
+      }
+      .emoji-payment::before {
+        content: "💳";
+      }
+      .emoji-fonts::before {
+        content: "🔤";
+      }
+      .emoji-cookies::before {
+        content: "🍪";
+      }
+      .emoji-animations::before {
+        content: "🎬";
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Your Browser Information</h1>
+
+      <div class="info-grid">
+        <!-- Navigator Basic Info -->
+        <div class="info-card">
+          <div class="card-title emoji-nav">Navigator Properties</div>
+          <div class="info-item">
+            <span class="label">User Agent:</span>
+            <span class="value" id="userAgent"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">App Name:</span>
+            <span class="value" id="appName"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">App Version:</span>
+            <span class="value" id="appVersion"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">App Code Name:</span>
+            <span class="value" id="appCodeName"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Product:</span>
+            <span class="value" id="product"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Product Sub:</span>
+            <span class="value" id="productSub"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Vendor:</span>
+            <span class="value" id="vendor"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Vendor Sub:</span>
+            <span class="value" id="vendorSub"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Build ID:</span>
+            <span class="value" id="buildID"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Oscpu:</span>
+            <span class="value" id="oscpu"></span>
+          </div>
+        </div>
+
+        <!-- Language & Localization -->
+        <div class="info-card">
+          <div class="card-title emoji-basic">Language & Localization</div>
+          <div class="info-item">
+            <span class="label">Language:</span>
+            <span class="value" id="language"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Languages:</span>
+            <span class="value" id="languages"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Platform:</span>
+            <span class="value" id="platform"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Timezone:</span>
+            <span class="value" id="timezone"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Timezone Offset:</span>
+            <span class="value" id="timezoneOffset"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Date Format:</span>
+            <span class="value" id="dateFormat"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Number Format:</span>
+            <span class="value" id="numberFormat"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Currency:</span>
+            <span class="value" id="currency"></span>
+          </div>
+        </div>
+
+        <!-- Hardware Information -->
+        <div class="info-card">
+          <div class="card-title emoji-hardware">Hardware Information</div>
+          <div class="info-item">
+            <span class="label">CPU Cores:</span>
+            <span class="value" id="hardwareConcurrency"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Device Memory:</span>
+            <span class="value" id="deviceMemory"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Device Pixel Ratio:</span>
+            <span class="value" id="devicePixelRatio"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Max Touch Points:</span>
+            <span class="value" id="maxTouchPoints"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">PDF Viewer:</span>
+            <span class="value" id="pdfViewerEnabled"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Java Enabled:</span>
+            <span class="value" id="javaEnabled"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Cookie Enabled:</span>
+            <span class="value" id="cookieEnabled"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Do Not Track:</span>
+            <span class="value" id="doNotTrack"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Online Status:</span>
+            <span class="value" id="onlineStatus"></span>
+          </div>
+        </div>
+
+        <!-- Screen Information -->
+        <div class="info-card">
+          <div class="card-title emoji-screen">Screen Information</div>
+          <div class="info-item">
+            <span class="label">Screen Resolution:</span>
+            <span class="value" id="screenResolution"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Available Screen:</span>
+            <span class="value" id="availableScreen"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Color Depth:</span>
+            <span class="value" id="colorDepth"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Pixel Depth:</span>
+            <span class="value" id="pixelDepth"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Orientation:</span>
+            <span class="value" id="orientation"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Viewport:</span>
+            <span class="value" id="viewport"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Window Size:</span>
+            <span class="value" id="windowSize"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Document Size:</span>
+            <span class="value" id="documentSize"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Scroll Position:</span>
+            <span class="value" id="scrollPosition"></span>
+          </div>
+        </div>
+
+        <!-- Network Information -->
+        <div class="info-card">
+          <div class="card-title emoji-network">Network Information</div>
+          <div class="info-item">
+            <span class="label">Connection Type:</span>
+            <span class="value" id="connectionType"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Effective Type:</span>
+            <span class="value" id="effectiveType"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Downlink:</span>
+            <span class="value" id="downlink"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Downlink Max:</span>
+            <span class="value" id="downlinkMax"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">RTT:</span>
+            <span class="value" id="rtt"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Save Data:</span>
+            <span class="value" id="saveData"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Online Events:</span>
+            <span class="value" id="onlineEvents"></span>
+          </div>
+        </div>
+
+        <!-- Location & Battery -->
+        <div class="info-card">
+          <div class="card-title emoji-location">Location & Battery</div>
+          <div class="info-item">
+            <span class="label">Geolocation:</span>
+            <span class="value" id="geolocation" class="loading"
+              >Requesting...</span
+            >
+          </div>
+          <div class="info-item">
+            <span class="label">State:</span>
+            <span class="value" id="state" class="loading">Requesting...</span>
+          </div>
+          <div class="info-item">
+            <span class="label">State Code:</span>
+            <span class="value" id="stateCode" class="loading"
+              >Requesting...</span
+            >
+          </div>
+          <div class="info-item">
+            <span class="label">Position Options:</span>
+            <span class="value" id="positionOptions"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Battery Level:</span>
+            <span class="value" id="batteryLevel" class="loading"
+              >Requesting...</span
+            >
+          </div>
+          <div class="info-item">
+            <span class="label">Charging:</span>
+            <span class="value" id="charging" class="loading"
+              >Requesting...</span
+            >
+          </div>
+          <div class="info-item">
+            <span class="label">Charging Time:</span>
+            <span class="value" id="chargingTime" class="loading"
+              >Requesting...</span
+            >
+          </div>
+          <div class="info-item">
+            <span class="label">Discharging Time:</span>
+            <span class="value" id="dischargingTime" class="loading"
+              >Requesting...</span
+            >
+          </div>
+        </div>
+
+        <!-- Media & Devices -->
+        <div class="info-card">
+          <div class="card-title emoji-media">Media Devices & Capabilities</div>
+          <div class="info-item">
+            <span class="label">Media Devices:</span>
+            <span class="value" id="mediaDevices" class="loading"
+              >Requesting...</span
+            >
+          </div>
+          <div class="info-item">
+            <span class="label">Audio Context:</span>
+            <span class="value" id="audioContext"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Audio Worklet:</span>
+            <span class="value" id="audioWorklet"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">WebRTC Support:</span>
+            <span class="value" id="webrtcSupport"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Screen Capture:</span>
+            <span class="value" id="screenCapture"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Picture in Picture:</span>
+            <span class="value" id="pictureInPicture"></span>
+          </div>
+          <div class="info-item">
+            <span class="label">Media Session:</span>
+            <span class="value" id="mediaSession"></span>
+          </div>
+        </div>
+
+        <!-- Sensors -->
+        <div class="info-card">
+          <div class="card-title emoji-sensors">Sensors & Motion</div>
+          <div class="info-item">
+            <span class="label">Device Motion:</span>
+            <span class="value" id="deviceMotion" class="loading"
+              >Checking...</span
+            >
+          </div>
+          <div class="info-item">
+            <span class="label">Device Orientation:</span>
+            <span class="value" id="deviceOrientation" class="loading"
+              >Checking...</span
+            >
+          </div>
+          <div class="info-item">
+            <span class="label">Ambient Light:</span>
+            <span class="value" id="ambientLight" class="loading"
+              >Checking...</span
+            >
+          </div>
+          <div class="info-item">
+            <span class="label">Proximity:</span>
+            <span class="value" id="proximity" class="loading"
+              >Checking...</span
+            >
+          </div>
+          <div class="info-item">
+            <span class="label">Vibration:</span>
+            <span class="value" id="vibration"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Storage Information -->
+      <div class="info-card full-width">
+        <div class="card-title emoji-storage">Storage Information</div>
+        <div class="storage-info">
+          <div class="storage-item">
+            <strong>Storage Estimate</strong><br />
+            <span id="storageEstimate" class="loading">Calculating...</span>
+          </div>
+          <div class="storage-item">
+            <strong>LocalStorage</strong><br />
+            <span id="localStorageInfo"></span>
+          </div>
+          <div class="storage-item">
+            <strong>SessionStorage</strong><br />
+            <span id="sessionStorageInfo"></span>
+          </div>
+          <div class="storage-item">
+            <strong>IndexedDB</strong><br />
+            <span id="indexedDBInfo"></span>
+          </div>
+          <div class="storage-item">
+            <strong>WebSQL</strong><br />
+            <span id="webSQLInfo"></span>
+          </div>
+          <div class="storage-item">
+            <strong>Cache API</strong><br />
+            <span id="cacheAPIInfo"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- WebGL Information -->
+      <div class="info-card full-width">
+        <div class="card-title emoji-webgl">WebGL Information</div>
+        <div class="info-item">
+          <span class="label">WebGL Support:</span>
+          <span class="value" id="webglSupport"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">WebGL2 Support:</span>
+          <span class="value" id="webgl2Support"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">WebGL Vendor:</span>
+          <span class="value" id="webglVendor"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">WebGL Renderer:</span>
+          <span class="value" id="webglRenderer"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">WebGL Version:</span>
+          <span class="value" id="webglVersion"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">GLSL Version:</span>
+          <span class="value" id="glslVersion"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">WebGL Extensions:</span>
+          <span class="value" id="webglExtensions"></span>
+        </div>
+      </div>
+
+      <!-- Audio Information -->
+      <div class="info-card full-width">
+        <div class="card-title emoji-audio">Audio Information</div>
+        <div class="info-item">
+          <span class="label">Audio Context State:</span>
+          <span class="value" id="audioContextState"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">Sample Rate:</span>
+          <span class="value" id="sampleRate"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">Base Latency:</span>
+          <span class="value" id="baseLatency"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">Output Latency:</span>
+          <span class="value" id="outputLatency"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">Supported Codecs:</span>
+          <span class="value" id="audioCodecs"></span>
+        </div>
+      </div>
+
+      <!-- Permissions -->
+      <div class="info-card full-width">
+        <div class="card-title emoji-permissions">Permissions Status</div>
+        <div class="permissions-grid" id="permissionsGrid">
+          <div class="loading">Checking permissions...</div>
+        </div>
+      </div>
+
+      <!-- Features Support -->
+      <div class="info-card full-width">
+        <div class="card-title emoji-features">Feature Support</div>
+        <div class="features-grid" id="featuresGrid">
+          <div class="loading">Checking features...</div>
+        </div>
+      </div>
+
+      <!-- Clipboard & Payment -->
+      <div class="info-card full-width">
+        <div class="card-title emoji-clipboard">Modern Web APIs</div>
+        <div class="info-item">
+          <span class="label">Clipboard API:</span>
+          <span class="value" id="clipboardAPI"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">Payment Request:</span>
+          <span class="value" id="paymentRequest"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">Web Share:</span>
+          <span class="value" id="webShare"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">Web Locks:</span>
+          <span class="value" id="webLocks"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">Broadcast Channel:</span>
+          <span class="value" id="broadcastChannel"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">Intersection Observer:</span>
+          <span class="value" id="intersectionObserver"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">Resize Observer:</span>
+          <span class="value" id="resizeObserver"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">Mutation Observer:</span>
+          <span class="value" id="mutationObserver"></span>
+        </div>
+      </div>
+
+      <!-- Security Information -->
+      <div class="info-card full-width">
+        <div class="card-title emoji-security">Security Information</div>
+        <div class="info-item">
+          <span class="label">HTTPS:</span>
+          <span class="value" id="isSecure"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">Mixed Content:</span>
+          <span class="value" id="mixedContent"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">Trusted Types:</span>
+          <span class="value" id="trustedTypes"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">Origin:</span>
+          <span class="value" id="origin"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">Referrer:</span>
+          <span class="value" id="referrer"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">CSP:</span>
+          <span class="value" id="csp"></span>
+        </div>
+      </div>
+
+      <!-- Performance Information -->
+      <div class="info-card full-width">
+        <div class="card-title emoji-performance">Performance Information</div>
+        <div class="info-item">
+          <span class="label">Navigation Timing:</span>
+          <span class="value" id="navigationTiming"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">Memory Usage:</span>
+          <span class="value" id="memoryUsage"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">Service Worker:</span>
+          <span class="value" id="serviceWorker"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">Web Workers:</span>
+          <span class="value" id="webWorkers"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">Shared Workers:</span>
+          <span class="value" id="sharedWorkers"></span>
+        </div>
+      </div>
+
+      <!-- Browser Plugins -->
+      <div class="info-card full-width">
+        <div class="card-title emoji-plugins">Browser Plugins</div>
+        <div class="info-item">
+          <span class="label">Plugin Count:</span>
+          <span class="value" id="pluginCount"></span>
+        </div>
+        <div class="plugin-list" id="pluginList"></div>
+      </div>
+
+      <!-- MIME Types -->
+      <div class="info-card full-width">
+        <div class="card-title emoji-experimental">Supported MIME Types</div>
+        <div class="mime-list" id="mimeList"></div>
+      </div>
+
+      <!-- Experimental Features -->
+      <div class="info-card full-width">
+        <div class="card-title emoji-experimental">
+          Experimental & Advanced Features
+        </div>
+        <div class="info-item">
+          <span class="label">WebAssembly:</span>
+          <span class="value" id="wasmSupport"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">WebXR:</span>
+          <span class="value" id="webXR"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">Web Bluetooth:</span>
+          <span class="value" id="webBluetooth"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">Web USB:</span>
+          <span class="value" id="webUSB"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">Web Serial:</span>
+          <span class="value" id="webSerial"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">Web HID:</span>
+          <span class="value" id="webHID"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">File System Access:</span>
+          <span class="value" id="fileSystemAccess"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">Contact Picker:</span>
+          <span class="value" id="contactPicker"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">Eye Dropper:</span>
+          <span class="value" id="eyeDropper"></span>
+        </div>
+      </div>
+
+      <!-- Font Information -->
+      <div class="info-card full-width">
+        <div class="card-title emoji-fonts">Font Information</div>
+        <div class="info-item">
+          <span class="label">Font Face Observer:</span>
+          <span class="value" id="fontFaceObserver"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">Available Fonts:</span>
+          <span class="value" id="availableFonts" class="loading"
+            >Detecting...</span
+          >
+        </div>
+      </div>
+
+      <!-- Cookie Information -->
+      <div class="info-card full-width">
+        <div class="card-title emoji-cookies">Cookies & Tracking</div>
+        <div class="info-item">
+          <span class="label">Cookies:</span>
+          <span class="value" id="cookiesList"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">Third Party Cookies:</span>
+          <span class="value" id="thirdPartyCookies"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">Tracking Protection:</span>
+          <span class="value" id="trackingProtection"></span>
+        </div>
+      </div>
+
+      <!-- Animation Information -->
+      <div class="info-card full-width">
+        <div class="card-title emoji-animations">Animation Capabilities</div>
+        <div class="info-item">
+          <span class="label">CSS Animations:</span>
+          <span class="value" id="cssAnimations"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">Web Animations API:</span>
+          <span class="value" id="webAnimations"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">requestAnimationFrame:</span>
+          <span class="value" id="requestAnimationFrame"></span>
+        </div>
+      </div>
+
+      <button class="refresh-btn" onclick="location.reload()">
+        🔄 Refresh All Information
+      </button>
+    </div>
+
+    <script>
+      // Utility functions
+      function formatBytes(bytes) {
+        if (bytes === 0) return "0 Bytes";
+        const k = 1024;
+        const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+      }
+
+      function formatTime(ms) {
+        if (ms === Infinity) return "Infinity";
+        if (ms < 1000) return ms + "ms";
+        return (ms / 1000).toFixed(2) + "s";
+      }
+
+      function checkSupport(feature) {
+        return feature !== undefined ? "Yes" : "No";
+      }
+
+      // Basic Navigator Properties
+      document.getElementById("userAgent").textContent = navigator.userAgent;
+      document.getElementById("appName").textContent =
+        navigator.appName || "Not available";
+      document.getElementById("appVersion").textContent =
+        navigator.appVersion || "Not available";
+      document.getElementById("appCodeName").textContent =
+        navigator.appCodeName || "Not available";
+      document.getElementById("product").textContent =
+        navigator.product || "Not available";
+      document.getElementById("productSub").textContent =
+        navigator.productSub || "Not available";
+      document.getElementById("vendor").textContent =
+        navigator.vendor || "Not available";
+      document.getElementById("vendorSub").textContent =
+        navigator.vendorSub || "Not available";
+      document.getElementById("buildID").textContent =
+        navigator.buildID || "Not available";
+      document.getElementById("oscpu").textContent =
+        navigator.oscpu || "Not available";
+
+      // Language and Localization
+      document.getElementById("language").textContent = navigator.language;
+      document.getElementById("languages").textContent = navigator.languages
+        ? navigator.languages.join(", ")
+        : "Not available";
+      document.getElementById("platform").textContent = navigator.platform;
+      document.getElementById("timezone").textContent =
+        Intl.DateTimeFormat().resolvedOptions().timeZone;
+      document.getElementById("timezoneOffset").textContent =
+        new Date().getTimezoneOffset() + " minutes";
+      document.getElementById("dateFormat").textContent =
+        new Intl.DateTimeFormat().format(new Date());
+      document.getElementById("numberFormat").textContent =
+        new Intl.NumberFormat().format(123456.789);
+
+      try {
+        const currency = new Intl.NumberFormat(navigator.language, {
+          style: "currency",
+          currency: "USD",
+        }).format(123.45);
+        document.getElementById("currency").textContent = currency;
+      } catch (e) {
+        document.getElementById("currency").textContent = "Not available";
+      }
+
+      // Hardware Information
+      document.getElementById("hardwareConcurrency").textContent =
+        navigator.hardwareConcurrency || "Not available";
+      document.getElementById("deviceMemory").textContent =
+        navigator.deviceMemory
+          ? navigator.deviceMemory + " GB"
+          : "Not available";
+      document.getElementById("devicePixelRatio").textContent =
+        window.devicePixelRatio || "Not available";
+      document.getElementById("maxTouchPoints").textContent =
+        navigator.maxTouchPoints || "0";
+      document.getElementById("pdfViewerEnabled").textContent =
+        navigator.pdfViewerEnabled ? "Yes" : "No";
+      document.getElementById("javaEnabled").textContent = navigator.javaEnabled
+        ? navigator.javaEnabled()
+          ? "Yes"
+          : "No"
+        : "Not available";
+      document.getElementById("cookieEnabled").textContent =
+        navigator.cookieEnabled ? "Yes" : "No";
+      document.getElementById("doNotTrack").textContent =
+        navigator.doNotTrack || "Not set";
+      document.getElementById("onlineStatus").textContent = navigator.onLine
+        ? "Online"
+        : "Offline";
+
+      // Screen Information
+      document.getElementById(
+        "screenResolution"
+      ).textContent = `${screen.width} × ${screen.height}`;
+      document.getElementById(
+        "availableScreen"
+      ).textContent = `${screen.availWidth} × ${screen.availHeight}`;
+      document.getElementById("colorDepth").textContent =
+        screen.colorDepth + " bits";
+      document.getElementById("pixelDepth").textContent =
+        screen.pixelDepth + " bits";
+
+      if (screen.orientation) {
+        document.getElementById(
+          "orientation"
+        ).textContent = `${screen.orientation.type} (${screen.orientation.angle}°)`;
+      } else {
+        document.getElementById("orientation").textContent = "Not available";
+      }
+
+      document.getElementById(
+        "viewport"
+      ).textContent = `${window.innerWidth} × ${window.innerHeight}`;
+      document.getElementById(
+        "windowSize"
+      ).textContent = `${window.outerWidth} × ${window.outerHeight}`;
+      document.getElementById(
+        "documentSize"
+      ).textContent = `${document.documentElement.scrollWidth} × ${document.documentElement.scrollHeight}`;
+      document.getElementById(
+        "scrollPosition"
+      ).textContent = `${window.scrollX}, ${window.scrollY}`;
+
+      // Network Information
+      if ("connection" in navigator) {
+        const conn = navigator.connection;
+        document.getElementById("connectionType").textContent =
+          conn.type || "Unknown";
+        document.getElementById("effectiveType").textContent =
+          conn.effectiveType || "Unknown";
+        document.getElementById("downlink").textContent = conn.downlink
+          ? conn.downlink + " Mbps"
+          : "Unknown";
+        document.getElementById("downlinkMax").textContent = conn.downlinkMax
+          ? conn.downlinkMax + " Mbps"
+          : "Unknown";
+        document.getElementById("rtt").textContent = conn.rtt
+          ? conn.rtt + " ms"
+          : "Unknown";
+        document.getElementById("saveData").textContent = conn.saveData
+          ? "Yes"
+          : "No";
+      } else {
+        [
+          "connectionType",
+          "effectiveType",
+          "downlink",
+          "downlinkMax",
+          "rtt",
+          "saveData",
+        ].forEach((id) => {
+          document.getElementById(id).textContent = "Not supported";
+        });
+      }
+
+      let onlineEventCount = 0;
+      let offlineEventCount = 0;
+      window.addEventListener("online", () => {
+        onlineEventCount++;
+        updateOnlineEvents();
+      });
+      window.addEventListener("offline", () => {
+        offlineEventCount++;
+        updateOnlineEvents();
+      });
+
+      function updateOnlineEvents() {
+        document.getElementById(
+          "onlineEvents"
+        ).textContent = `Online: ${onlineEventCount}, Offline: ${offlineEventCount}`;
+      }
+      updateOnlineEvents();
+
+      // Geolocation with Reverse Geocoding
+      if ("geolocation" in navigator) {
+        const options = {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 60000,
+        };
+        document.getElementById("positionOptions").textContent =
+          JSON.stringify(options);
+
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const coords = position.coords;
+            let info = `Lat: ${coords.latitude.toFixed(
+              6
+            )}, Lng: ${coords.longitude.toFixed(6)}, Accuracy: ±${
+              coords.accuracy
+            }m`;
+            if (coords.altitude) info += `, Alt: ${coords.altitude}m`;
+            if (coords.heading) info += `, Heading: ${coords.heading}°`;
+            if (coords.speed) info += `, Speed: ${coords.speed}m/s`;
+            document.getElementById("geolocation").textContent = info;
+            document.getElementById("geolocation").className = "value success";
+
+            // Reverse geocoding using Nominatim API
+            fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${coords.latitude}&lon=${coords.longitude}`,
+              {
+                headers: {
+                  "User-Agent": "BrowserInfoDetector/1.0 (contact@example.com)", // Nominatim requires a User-Agent
+                },
+              }
+            )
+              .then((response) => response.json())
+              .then((data) => {
+                const state =
+                  data.address.state || data.address.region || "Unknown state";
+                const stateCode =
+                  data.address["ISO3166-2-lvl4"] || "Unknown state code";
+                document.getElementById("state").textContent = state;
+                document.getElementById("stateCode").textContent = stateCode;
+                document.getElementById("state").className = "value success";
+                document.getElementById("stateCode").className =
+                  "value success";
+              })
+              .catch((err) => {
+                document.getElementById(
+                  "state"
+                ).textContent = `Error: ${err.message}`;
+                document.getElementById(
+                  "stateCode"
+                ).textContent = `Error: ${err.message}`;
+                document.getElementById("state").className = "value error";
+                document.getElementById("stateCode").className = "value error";
+              });
+          },
+          (error) => {
+            document.getElementById(
+              "geolocation"
+            ).textContent = `Error: ${error.message} (Code: ${error.code})`;
+            document.getElementById("geolocation").className = "value error";
+            document.getElementById("state").textContent = "Not available";
+            document.getElementById("stateCode").textContent = "Not available";
+            document.getElementById("state").className = "value error";
+            document.getElementById("stateCode").className = "value error";
+            document.getElementById("positionOptions").textContent =
+              "Not supported";
+          },
+          options
+        );
+      } else {
+        document.getElementById("geolocation").textContent = "Not supported";
+        document.getElementById("geolocation").className = "value error";
+        document.getElementById("state").textContent = "Not supported";
+        document.getElementById("stateCode").textContent = "Not supported";
+        document.getElementById("state").className = "value error";
+        document.getElementById("stateCode").className = "value error";
+        document.getElementById("positionOptions").textContent =
+          "Not supported";
+      }
+
+      // Battery API
+      if ("getBattery" in navigator) {
+        navigator
+          .getBattery()
+          .then((battery) => {
+            document.getElementById("batteryLevel").textContent =
+              Math.round(battery.level * 100) + "%";
+            document.getElementById("charging").textContent = battery.charging
+              ? "Yes"
+              : "No";
+            document.getElementById("chargingTime").textContent = formatTime(
+              battery.chargingTime * 1000
+            );
+            document.getElementById("dischargingTime").textContent = formatTime(
+              battery.dischargingTime * 1000
+            );
+
+            [
+              "batteryLevel",
+              "charging",
+              "chargingTime",
+              "dischargingTime",
+            ].forEach((id) => {
+              document.getElementById(id).className = "value success";
+            });
+
+            // Battery event listeners
+            battery.addEventListener("chargingchange", () => {
+              document.getElementById("charging").textContent = battery.charging
+                ? "Yes"
+                : "No";
+            });
+            battery.addEventListener("levelchange", () => {
+              document.getElementById("batteryLevel").textContent =
+                Math.round(battery.level * 100) + "%";
+            });
+          })
+          .catch(() => {
+            [
+              "batteryLevel",
+              "charging",
+              "chargingTime",
+              "dischargingTime",
+            ].forEach((id) => {
+              document.getElementById(id).textContent = "Not available";
+              document.getElementById(id).className = "value error";
+            });
+          });
+      } else {
+        ["batteryLevel", "charging", "chargingTime", "dischargingTime"].forEach(
+          (id) => {
+            document.getElementById(id).textContent = "Not supported";
+            document.getElementById(id).className = "value error";
+          }
+        );
+      }
+
+      // Media Devices
+      if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+        navigator.mediaDevices
+          .enumerateDevices()
+          .then((devices) => {
+            const audioInputs = devices.filter(
+              (device) => device.kind === "audioinput"
+            ).length;
+            const videoInputs = devices.filter(
+              (device) => device.kind === "videoinput"
+            ).length;
+            const audioOutputs = devices.filter(
+              (device) => device.kind === "audiooutput"
+            ).length;
+
+            document.getElementById(
+              "mediaDevices"
+            ).textContent = `Audio In: ${audioInputs}, Audio Out: ${audioOutputs}, Video In: ${videoInputs}`;
+            document.getElementById("mediaDevices").className = "value success";
+          })
+          .catch(() => {
+            document.getElementById("mediaDevices").textContent =
+              "Access denied or error";
+            document.getElementById("mediaDevices").className = "value error";
+          });
+      } else {
+        document.getElementById("mediaDevices").textContent = "Not supported";
+        document.getElementById("mediaDevices").className = "value error";
+      }
+
+      // Audio Context
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) {
+          const audioCtx = new AudioContext();
+          document.getElementById("audioContext").textContent = "Supported";
+          document.getElementById("audioContextState").textContent =
+            audioCtx.state;
+          document.getElementById("sampleRate").textContent =
+            audioCtx.sampleRate + " Hz";
+          document.getElementById("baseLatency").textContent =
+            audioCtx.baseLatency
+              ? (audioCtx.baseLatency * 1000).toFixed(2) + "ms"
+              : "Not available";
+          document.getElementById("outputLatency").textContent =
+            audioCtx.outputLatency
+              ? (audioCtx.outputLatency * 1000).toFixed(2) + "ms"
+              : "Not available";
+        } else {
+          document.getElementById("audioContext").textContent = "Not supported";
+        }
+      } catch (e) {
+        document.getElementById("audioContext").textContent =
+          "Error: " + e.message;
+      }
+
+      // Audio Worklet
+      document.getElementById("audioWorklet").textContent = checkSupport(
+        window.AudioWorklet
+      );
+
+      // Audio Codecs
+      const audio = document.createElement("audio");
+      const audioCodecs = [];
+      const codecsToTest = [
+        "audio/mpeg",
+        'audio/ogg; codecs="vorbis"',
+        "audio/wav",
+        "audio/mp4",
+        "audio/webm",
+        "audio/aac",
+        "audio/flac",
+        "audio/opus",
+      ];
+
+      codecsToTest.forEach((codec) => {
+        const support = audio.canPlayType(codec);
+        if (support === "probably") audioCodecs.push(codec + " (probably)");
+        else if (support === "maybe") audioCodecs.push(codec + " (maybe)");
+      });
+      document.getElementById("audioCodecs").textContent =
+        audioCodecs.length > 0 ? audioCodecs.join(", ") : "None detected";
+
+      // WebRTC Support
+      document.getElementById("webrtcSupport").textContent = !!(
+        navigator.getUserMedia ||
+        navigator.webkitGetUserMedia ||
+        navigator.mozGetUserMedia ||
+        navigator.msGetUserMedia ||
+        (navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
+      )
+        ? "Yes"
+        : "No";
+
+      // Screen Capture
+      document.getElementById("screenCapture").textContent = !!(
+        navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia
+      )
+        ? "Yes"
+        : "No";
+
+      // Picture in Picture
+      document.getElementById("pictureInPicture").textContent = checkSupport(
+        document.pictureInPictureEnabled
+      );
+
+      // Media Session
+      document.getElementById("mediaSession").textContent = checkSupport(
+        navigator.mediaSession
+      );
+
+      // Device Motion and Orientation
+      let motionPermissionGranted = false;
+      let orientationPermissionGranted = false;
+
+      if ("DeviceMotionEvent" in window) {
+        if (typeof DeviceMotionEvent.requestPermission === "function") {
+          document.getElementById("deviceMotion").textContent =
+            "Permission required";
+          document.getElementById("deviceMotion").className = "value warning";
+        } else {
+          window.addEventListener(
+            "devicemotion",
+            function (event) {
+              if (!motionPermissionGranted) {
+                motionPermissionGranted = true;
+                document.getElementById("deviceMotion").textContent =
+                  "Supported and active";
+                document.getElementById("deviceMotion").className =
+                  "value success";
+              }
+            },
+            { once: true }
+          );
+
+          setTimeout(() => {
+            if (!motionPermissionGranted) {
+              document.getElementById("deviceMotion").textContent =
+                "Supported but no data";
+              document.getElementById("deviceMotion").className =
+                "value warning";
+            }
+          }, 2000);
+        }
+      } else {
+        document.getElementById("deviceMotion").textContent = "Not supported";
+        document.getElementById("deviceMotion").className = "value error";
+      }
+
+      if ("DeviceOrientationEvent" in window) {
+        if (typeof DeviceOrientationEvent.requestPermission === "function") {
+          document.getElementById("deviceOrientation").textContent =
+            "Permission required";
+          document.getElementById("deviceOrientation").className =
+            "value warning";
+        } else {
+          window.addEventListener(
+            "deviceorientation",
+            function (event) {
+              if (!orientationPermissionGranted) {
+                orientationPermissionGranted = true;
+                document.getElementById("deviceOrientation").textContent =
+                  "Supported and active";
+                document.getElementById("deviceOrientation").className =
+                  "value success";
+              }
+            },
+            { once: true }
+          );
+
+          setTimeout(() => {
+            if (!orientationPermissionGranted) {
+              document.getElementById("deviceOrientation").textContent =
+                "Supported but no data";
+              document.getElementById("deviceOrientation").className =
+                "value warning";
+            }
+          }, 2000);
+        }
+      } else {
+        document.getElementById("deviceOrientation").textContent =
+          "Not supported";
+        document.getElementById("deviceOrientation").className = "value error";
+      }
+
+      // Ambient Light
+      if ("AmbientLightSensor" in window) {
+        try {
+          const sensor = new AmbientLightSensor();
+          sensor.addEventListener("reading", () => {
+            document.getElementById(
+              "ambientLight"
+            ).textContent = `${sensor.illuminance} lux`;
+            document.getElementById("ambientLight").className = "value success";
+          });
+          sensor.start();
+        } catch (error) {
+          document.getElementById("ambientLight").textContent =
+            "Permission denied";
+          document.getElementById("ambientLight").className = "value error";
+        }
+      } else {
+        document.getElementById("ambientLight").textContent = "Not supported";
+        document.getElementById("ambientLight").className = "value error";
+      }
+
+      // Proximity
+      if ("ProximitySensor" in window) {
+        document.getElementById("proximity").textContent = "Supported";
+        document.getElementById("proximity").className = "value success";
+      } else {
+        document.getElementById("proximity").textContent = "Not supported";
+        document.getElementById("proximity").className = "value error";
+      }
+
+      // Vibration
+      document.getElementById("vibration").textContent = checkSupport(
+        navigator.vibrate
+      );
+
+      // Storage
+      if ("storage" in navigator && "estimate" in navigator.storage) {
+        navigator.storage
+          .estimate()
+          .then((estimate) => {
+            const used = estimate.usage
+              ? formatBytes(estimate.usage)
+              : "Unknown";
+            const quota = estimate.quota
+              ? formatBytes(estimate.quota)
+              : "Unknown";
+            const percentage =
+              estimate.usage && estimate.quota
+                ? ((estimate.usage / estimate.quota) * 100).toFixed(2) + "%"
+                : "Unknown";
+            document.getElementById(
+              "storageEstimate"
+            ).textContent = `Used: ${used} / ${quota} (${percentage})`;
+            document.getElementById("storageEstimate").className = "success";
+          })
+          .catch(() => {
+            document.getElementById("storageEstimate").textContent =
+              "Not available";
+            document.getElementById("storageEstimate").className = "error";
+          });
+      } else {
+        document.getElementById("storageEstimate").textContent =
+          "Not supported";
+        document.getElementById("storageEstimate").className = "error";
+      }
+
+      // Storage APIs
+      document.getElementById("localStorageInfo").textContent =
+        typeof Storage !== "undefined" ? "Supported" : "Not supported";
+      document.getElementById("sessionStorageInfo").textContent =
+        typeof Storage !== "undefined" ? "Supported" : "Not supported";
+      document.getElementById("indexedDBInfo").textContent = checkSupport(
+        window.indexedDB
+      );
+      document.getElementById("webSQLInfo").textContent = checkSupport(
+        window.openDatabase
+      );
+      document.getElementById("cacheAPIInfo").textContent = checkSupport(
+        window.caches
+      );
+
+      // WebGL Information
+      const canvas = document.createElement("canvas");
+      const gl =
+        canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+      const gl2 = canvas.getContext("webgl2");
+
+      if (gl) {
+        document.getElementById("webglSupport").textContent = "Yes";
+        document.getElementById("webglVendor").textContent = gl.getParameter(
+          gl.VENDOR
+        );
+        document.getElementById("webglRenderer").textContent = gl.getParameter(
+          gl.RENDERER
+        );
+        document.getElementById("webglVersion").textContent = gl.getParameter(
+          gl.VERSION
+        );
+        document.getElementById("glslVersion").textContent = gl.getParameter(
+          gl.SHADING_LANGUAGE_VERSION
+        );
+
+        const extensions = gl.getSupportedExtensions();
+        document.getElementById("webglExtensions").textContent = extensions
+          ? extensions.length + " extensions"
+          : "None";
+      } else {
+        document.getElementById("webglSupport").textContent = "No";
+        [
+          "webglVendor",
+          "webglRenderer",
+          "webglVersion",
+          "glslVersion",
+          "webglExtensions",
+        ].forEach((id) => {
+          document.getElementById(id).textContent = "Not available";
+        });
+      }
+
+      document.getElementById("webgl2Support").textContent = gl2 ? "Yes" : "No";
+
+      // Permissions
+      async function checkPermissions() {
+        const permissionsToCheck = [
+          "camera",
+          "microphone",
+          "geolocation",
+          "notifications",
+          "push",
+          "persistent-storage",
+          "accelerometer",
+          "gyroscope",
+          "magnetometer",
+          "clipboard-read",
+          "clipboard-write",
+          "background-sync",
+          "ambient-light-sensor",
+          "screen-wake-lock",
+          "speaker-selection",
+        ];
+
+        const permissionsGrid = document.getElementById("permissionsGrid");
+        permissionsGrid.innerHTML = "";
+
+        for (const permission of permissionsToCheck) {
+          try {
+            const result = await navigator.permissions.query({
+              name: permission,
+            });
+            const div = document.createElement("div");
+            div.className = `permission-item ${result.state}`;
+            div.textContent = `${permission}: ${result.state}`;
+            permissionsGrid.appendChild(div);
+          } catch (error) {
+            const div = document.createElement("div");
+            div.className = "permission-item not-supported";
+            div.textContent = `${permission}: not supported`;
+            permissionsGrid.appendChild(div);
+          }
+        }
+      }
+
+      if ("permissions" in navigator) {
+        checkPermissions();
+      } else {
+        document.getElementById("permissionsGrid").innerHTML =
+          '<div class="error">Permissions API not supported</div>';
+      }
+
+      // Feature Detection
+      function checkFeatures() {
+        const features = {
+          WebAssembly: checkSupport(window.WebAssembly),
+          "Service Worker": checkSupport(navigator.serviceWorker),
+          "Web Workers": checkSupport(window.Worker),
+          "Shared Workers": checkSupport(window.SharedWorker),
+          WebRTC: !!(
+            window.RTCPeerConnection ||
+            window.mozRTCPeerConnection ||
+            window.webkitRTCPeerConnection
+          ),
+          WebGL: !!gl,
+          WebGL2: !!gl2,
+          IndexedDB: checkSupport(window.indexedDB),
+          "Local Storage": typeof Storage !== "undefined",
+          "Session Storage": typeof Storage !== "undefined",
+          "Web Sockets": checkSupport(window.WebSocket),
+          "Server Sent Events": checkSupport(window.EventSource),
+          Canvas: checkSupport(document.createElement("canvas").getContext),
+          SVG: !!(
+            document.createElementNS &&
+            document.createElementNS("http://www.w3.org/2000/svg", "svg")
+              .createSVGRect
+          ),
+          "Drag and Drop": "draggable" in document.createElement("div"),
+          "File API": checkSupport(window.File),
+          Geolocation: checkSupport(navigator.geolocation),
+          "History API": !!(window.history && window.history.pushState),
+          "Application Cache": checkSupport(window.applicationCache),
+          "Web Notifications": checkSupport(window.Notification),
+          "Page Visibility": checkSupport(document.visibilityState),
+          "Online/Offline": "navigator" in window && "onLine" in navigator,
+          "Touch Events": "ontouchstart" in window,
+          "Pointer Events": checkSupport(window.PointerEvent),
+          "Device Orientation": checkSupport(window.DeviceOrientationEvent),
+          "Device Motion": checkSupport(window.DeviceMotionEvent),
+          "Battery API": checkSupport(navigator.getBattery),
+          "Vibration API": checkSupport(navigator.vibrate),
+          "Fullscreen API": !!(
+            document.fullscreenEnabled ||
+            document.webkitFullscreenEnabled ||
+            document.mozFullScreenEnabled
+          ),
+          "Screen Orientation": checkSupport(screen.orientation),
+          "Web Audio API": checkSupport(
+            window.AudioContext || window.webkitAudioContext
+          ),
+          "Web MIDI API": checkSupport(navigator.requestMIDIAccess),
+          "Gamepad API": checkSupport(navigator.getGamepads),
+          "Clipboard API": checkSupport(navigator.clipboard),
+          "Payment Request": checkSupport(window.PaymentRequest),
+          "Web Share API": checkSupport(navigator.share),
+          "Intersection Observer": checkSupport(window.IntersectionObserver),
+          "Resize Observer": checkSupport(window.ResizeObserver),
+          "Mutation Observer": checkSupport(window.MutationObserver),
+          "Performance Observer": checkSupport(window.PerformanceObserver),
+          "Broadcast Channel": checkSupport(window.BroadcastChannel),
+          "Web Locks API": checkSupport(navigator.locks),
+          "Web Crypto API": checkSupport(window.crypto && window.crypto.subtle),
+          "Push Messaging": checkSupport(window.PushManager),
+          "Background Sync":
+            "serviceWorker" in navigator &&
+            "sync" in window.ServiceWorkerRegistration.prototype,
+          "Web Streams": checkSupport(window.ReadableStream),
+          "Fetch API": checkSupport(window.fetch),
+          Promises: checkSupport(window.Promise),
+          Proxy: checkSupport(window.Proxy),
+          WeakMap: checkSupport(window.WeakMap),
+          WeakSet: checkSupport(window.WeakSet),
+          Map: checkSupport(window.Map),
+          Set: checkSupport(window.Set),
+          Symbol: checkSupport(window.Symbol),
+          "Array.from": checkSupport(Array.from),
+          "Object.assign": checkSupport(Object.assign),
+          requestAnimationFrame: checkSupport(window.requestAnimationFrame),
+          requestIdleCallback: checkSupport(window.requestIdleCallback),
+        };
+
+        const featuresGrid = document.getElementById("featuresGrid");
+        featuresGrid.innerHTML = "";
+
+        Object.entries(features).forEach(([feature, supported]) => {
+          const div = document.createElement("div");
+          div.className = `feature-item ${
+            supported === "Yes" ? "supported" : "not-supported"
+          }`;
+          div.textContent = `${feature}: ${supported}`;
+          featuresGrid.appendChild(div);
+        });
+      }
+
+      checkFeatures();
+
+      // Modern Web APIs
+      document.getElementById("clipboardAPI").textContent = checkSupport(
+        navigator.clipboard
+      );
+      document.getElementById("paymentRequest").textContent = checkSupport(
+        window.PaymentRequest
+      );
+      document.getElementById("webShare").textContent = checkSupport(
+        navigator.share
+      );
+      document.getElementById("webLocks").textContent = checkSupport(
+        navigator.locks
+      );
+      document.getElementById("broadcastChannel").textContent = checkSupport(
+        window.BroadcastChannel
+      );
+      document.getElementById("intersectionObserver").textContent =
+        checkSupport(window.IntersectionObserver);
+      document.getElementById("resizeObserver").textContent = checkSupport(
+        window.ResizeObserver
+      );
+      document.getElementById("mutationObserver").textContent = checkSupport(
+        window.MutationObserver
+      );
+
+      // Security Information
+      document.getElementById("isSecure").textContent =
+        location.protocol === "https:" ? "Yes (HTTPS)" : "No (HTTP)";
+      document.getElementById("mixedContent").textContent =
+        location.protocol === "https:" &&
+        document.querySelectorAll('[src^="http:"]').length > 0
+          ? "Detected"
+          : "None";
+      document.getElementById("trustedTypes").textContent = checkSupport(
+        window.trustedTypes
+      );
+      document.getElementById("origin").textContent = location.origin;
+      document.getElementById("referrer").textContent =
+        document.referrer || "None";
+
+      // Try to detect CSP
+      try {
+        eval("1"); // This will fail if CSP blocks eval
+        document.getElementById("csp").textContent =
+          "Not detected or eval allowed";
+      } catch (e) {
+        document.getElementById("csp").textContent = "Detected (eval blocked)";
+      }
+
+      // Performance Information
+      if (window.performance && window.performance.timing) {
+        const timing = window.performance.timing;
+        const loadTime = timing.loadEventEnd - timing.navigationStart;
+        const domReady =
+          timing.domContentLoadedEventEnd - timing.navigationStart;
+        document.getElementById(
+          "navigationTiming"
+        ).textContent = `Load: ${loadTime}ms, DOM Ready: ${domReady}ms`;
+      } else {
+        document.getElementById("navigationTiming").textContent =
+          "Not available";
+      }
+
+      if (window.performance && window.performance.memory) {
+        const memory = window.performance.memory;
+        document.getElementById(
+          "memoryUsage"
+        ).textContent = `Used: ${formatBytes(
+          memory.usedJSHeapSize
+        )}, Total: ${formatBytes(memory.totalJSHeapSize)}, Limit: ${formatBytes(
+          memory.jsHeapSizeLimit
+        )}`;
+      } else {
+        document.getElementById("memoryUsage").textContent = "Not available";
+      }
+
+      document.getElementById("serviceWorker").textContent = checkSupport(
+        navigator.serviceWorker
+      );
+      document.getElementById("webWorkers").textContent = checkSupport(
+        window.Worker
+      );
+      document.getElementById("sharedWorkers").textContent = checkSupport(
+        window.SharedWorker
+      );
+
+      // Browser Plugins
+      const plugins = navigator.plugins;
+      document.getElementById("pluginCount").textContent = plugins.length;
+      const pluginList = document.getElementById("pluginList");
+
+      if (plugins.length === 0) {
+        pluginList.innerHTML =
+          '<div class="plugin-item">No plugins detected</div>';
+      } else {
+        for (let i = 0; i < plugins.length; i++) {
+          const plugin = plugins[i];
+          const div = document.createElement("div");
+          div.className = "plugin-item";
+          div.innerHTML = `<strong>${plugin.name}</strong><br>${plugin.description}<br>File: ${plugin.filename}`;
+          pluginList.appendChild(div);
+        }
+      }
+
+      // MIME Types
+      const mimeTypes = navigator.mimeTypes;
+      const mimeList = document.getElementById("mimeList");
+
+      if (mimeTypes.length === 0) {
+        mimeList.innerHTML = "<div>No MIME types detected</div>";
+      } else {
+        for (let i = 0; i < mimeTypes.length; i++) {
+          const mimeType = mimeTypes[i];
+          const div = document.createElement("div");
+          div.textContent = `${mimeType.type} - ${mimeType.description}`;
+          mimeList.appendChild(div);
+        }
+      }
+
+      // Experimental Features
+      document.getElementById("wasmSupport").textContent = checkSupport(
+        window.WebAssembly
+      );
+      document.getElementById("webXR").textContent = checkSupport(navigator.xr);
+      document.getElementById("webBluetooth").textContent = checkSupport(
+        navigator.bluetooth
+      );
+      document.getElementById("webUSB").textContent = checkSupport(
+        navigator.usb
+      );
+      document.getElementById("webSerial").textContent = checkSupport(
+        navigator.serial
+      );
+      document.getElementById("webHID").textContent = checkSupport(
+        navigator.hid
+      );
+      document.getElementById("fileSystemAccess").textContent = checkSupport(
+        window.showOpenFilePicker
+      );
+      document.getElementById("contactPicker").textContent = checkSupport(
+        navigator.contacts
+      );
+      document.getElementById("eyeDropper").textContent = checkSupport(
+        window.EyeDropper
+      );
+
+      // Font Detection
+      document.getElementById("fontFaceObserver").textContent = checkSupport(
+        window.FontFace
+      );
+
+      function detectFonts() {
+        const fonts = [
+          "Arial",
+          "Helvetica",
+          "Times New Roman",
+          "Courier New",
+          "Verdana",
+          "Georgia",
+          "Palatino",
+          "Garamond",
+          "Bookman",
+          "Trebuchet MS",
+          "Arial Black",
+          "Impact",
+          "Comic Sans MS",
+        ];
+        const detectedFonts = [];
+
+        const testDiv = document.createElement("div");
+        testDiv.style.position = "absolute";
+        testDiv.style.visibility = "hidden";
+        testDiv.style.fontSize = "16px";
+        document.body.appendChild(testDiv);
+
+        const baseFont = "monospace";
+        testDiv.style.fontFamily = baseFont;
+        testDiv.textContent = "mmmmmmmmmmlli";
+        const baseWidth = testDiv.offsetWidth;
+
+        fonts.forEach((font) => {
+          testDiv.style.fontFamily = `"${font}", ${baseFont}`;
+          if (testDiv.offsetWidth !== baseWidth) {
+            detectedFonts.push(font);
+          }
+        });
+
+        document.body.removeChild(testDiv);
+
+        document.getElementById("availableFonts").textContent =
+          detectedFonts.length > 0 ? detectedFonts.join(", ") : "None detected";
+        document.getElementById("availableFonts").className = "value success";
+      }
+
+      setTimeout(detectFonts, 1000); // Delay to ensure page rendering
+
+      // Cookie Information
+      document.getElementById("cookiesList").textContent = document.cookie
+        ? document.cookie.split(";").join(", ")
+        : "No cookies";
+
+      // Check third-party cookies
+      function checkThirdPartyCookies() {
+        try {
+          document.cookie = "testcookie=test; SameSite=None; Secure";
+          const hasCookie = document.cookie.includes("testcookie");
+          document.cookie =
+            "testcookie=; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=None; Secure";
+          document.getElementById("thirdPartyCookies").textContent = hasCookie
+            ? "Allowed"
+            : "Blocked";
+        } catch (e) {
+          document.getElementById("thirdPartyCookies").textContent =
+            "Not supported";
+        }
+      }
+      checkThirdPartyCookies();
+
+      // Tracking Protection Detection
+      document.getElementById("trackingProtection").textContent =
+        navigator.globalPrivacyControl
+          ? "Enabled (Global Privacy Control)"
+          : "Unknown";
+
+      // Animation Capabilities
+      document.getElementById("cssAnimations").textContent = checkSupport(
+        document.createElement("div").style.animation
+      );
+      document.getElementById("webAnimations").textContent = checkSupport(
+        window.Element.prototype.animate
+      );
+      document.getElementById("requestAnimationFrame").textContent =
+        checkSupport(window.requestAnimationFrame);
+
+      // Update scroll position on scroll
+      window.addEventListener("scroll", () => {
+        document.getElementById("scrollPosition").textContent = `${Math.round(
+          window.scrollX
+        )}, ${Math.round(window.scrollY)}`;
+      });
+
+      // Update viewport and window size on resize
+      window.addEventListener("resize", () => {
+        document.getElementById(
+          "viewport"
+        ).textContent = `${window.innerWidth} × ${window.innerHeight}`;
+        document.getElementById(
+          "windowSize"
+        ).textContent = `${window.outerWidth} × ${window.outerHeight}`;
+        document.getElementById(
+          "documentSize"
+        ).textContent = `${document.documentElement.scrollWidth} × ${document.documentElement.scrollHeight}`;
+      });
+
+      // Update orientation on change
+      if (screen.orientation) {
+        screen.orientation.addEventListener("change", () => {
+          document.getElementById(
+            "orientation"
+          ).textContent = `${screen.orientation.type} (${screen.orientation.angle}°)`;
+        });
+      }
+    </script>
+  </body>
+</html>
