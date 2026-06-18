@@ -1,0 +1,950 @@
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<style>
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .tab {
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: 0.5px solid #ccc;
+    background: #f5f5f5;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+    transition: all 0.15s;
+    min-height: 44px;
+    white-space: nowrap;
+  }
+  .tab.active {
+    background: #1d9e75;
+    color: white;
+    border-color: #1d9e75;
+  }
+  .panel {
+    display: none;
+    background: #fff;
+    padding: 16px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    width: 100%;
+  }
+  .panel.active {
+    display: block;
+  }
+
+  .timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .t-row {
+    display: grid;
+    grid-template-columns: 110px 1px 1fr;
+    gap: 0 16px;
+  }
+  .t-time {
+    font-size: 13px;
+    color: #666;
+    padding: 12px 0;
+    text-align: right;
+    line-height: 1.3;
+    font-weight: bold;
+  }
+  .t-line {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .t-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 16px;
+  }
+  .t-bar {
+    width: 2px;
+    flex: 1;
+    background: #e0e0e0;
+    min-height: 20px;
+  }
+  .t-row:last-child .t-bar {
+    display: none;
+  }
+  .t-content {
+    padding: 10px 0 18px;
+    min-width: 0;
+  }
+  .t-label {
+    font-size: 15px;
+    font-weight: bold;
+    color: #222;
+    margin-bottom: 4px;
+  }
+  .t-detail {
+    font-size: 13px;
+    color: #444;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+  }
+  .t-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 6px;
+  }
+  .tag {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+  }
+  .tag-teal {
+    background: #e1f5ee;
+    color: #0f6e56;
+  }
+  .tag-amber {
+    background: #faeeda;
+    color: #854f0b;
+  }
+  .tag-purple {
+    background: #eeedfe;
+    color: #534ab7;
+  }
+  .tag-coral {
+    background: #faece7;
+    color: #993c1d;
+  }
+  .tag-blue {
+    background: #e6f1fb;
+    color: #185fa5;
+  }
+
+  .grocery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+  }
+  .g-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 14px;
+  }
+  .g-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 6px;
+  }
+  .g-title {
+    font-size: 14px;
+    font-weight: bold;
+    color: #111;
+  }
+  .g-item {
+    font-size: 13px;
+    color: #333;
+    padding: 6px 0;
+    border-bottom: 0.5px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  .g-item:last-child {
+    border-bottom: none;
+  }
+  .g-item span:first-child {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .g-qty {
+    font-size: 12px;
+    color: #666;
+    font-weight: bold;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .bottles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin-top: 1.5rem;
+  }
+  .bottle-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 14px;
+    text-align: center;
+  }
+  .bottle-num {
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 6px;
+  }
+  .bottle-name {
+    font-size: 15px;
+    font-weight: bold;
+    margin-bottom: 4px;
+  }
+  .bottle-desc {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .avoid-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 8px;
+    margin-top: 1rem;
+  }
+  .avoid-item {
+    background: #fcebeb;
+    border: 0.5px solid #f7c1c1;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 13px;
+    color: #791f1f;
+    font-weight: 500;
+  }
+
+  .section-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #111;
+    margin: 1.5rem 0 0.75rem;
+    border-left: 4px solid #1d9e75;
+    padding-left: 8px;
+  }
+  .tip-box {
+    background: #f9f9f9;
+    border-left: 4px solid #1d9e75;
+    border-radius: 0 8px 8px 0;
+    padding: 12px 14px;
+    font-size: 13px;
+    color: #444;
+    line-height: 1.6;
+    margin-top: 1rem;
+  }
+
+  @media (max-width: 1024px) {
+    .panel {
+      padding: 14px;
+    }
+
+    .t-row {
+      grid-template-columns: 96px 1px 1fr;
+      gap: 0 12px;
+    }
+
+    .t-time {
+      font-size: 12px;
+    }
+
+    .grocery-grid {
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .tab {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: 13px;
+      white-space: normal;
+      line-height: 1.35;
+      text-align: center;
+    }
+
+    .tab:last-child {
+      grid-column: 1 / -1;
+    }
+
+    .panel {
+      padding: 12px;
+      border-radius: 10px;
+    }
+
+    .t-row {
+      grid-template-columns: 18px minmax(0, 1fr);
+      gap: 0 10px;
+    }
+
+    .t-time {
+      grid-column: 2;
+      text-align: left;
+      padding: 8px 0 2px;
+      font-size: 12px;
+      color: #555;
+      font-weight: 700;
+    }
+
+    .t-line {
+      grid-column: 1;
+      grid-row: 2;
+    }
+
+    .t-dot {
+      margin-top: 6px;
+      width: 10px;
+      height: 10px;
+    }
+
+    .t-content {
+      grid-column: 2;
+      grid-row: 2;
+      padding: 4px 0 14px;
+    }
+
+    .t-label {
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .t-detail {
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .tag {
+      font-size: 10px;
+      padding: 2px 7px;
+    }
+
+    .grocery-grid {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .g-card,
+    .bottle-card {
+      padding: 12px;
+    }
+
+    .avoid-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .section-title {
+      font-size: 15px;
+      margin-top: 1.2rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .tip-box {
+      font-size: 12px;
+      padding: 10px 12px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .tabs {
+      grid-template-columns: 1fr;
+    }
+
+    .tab:last-child {
+      grid-column: auto;
+    }
+
+    .panel {
+      padding: 10px;
+    }
+
+    .t-row {
+      grid-template-columns: 16px minmax(0, 1fr);
+      gap: 0 8px;
+    }
+
+    .t-time {
+      padding-top: 6px;
+      font-size: 11px;
+    }
+
+    .t-label {
+      font-size: 13px;
+    }
+
+    .g-title,
+    .bottle-name {
+      font-size: 14px;
+    }
+
+    .g-item,
+    .avoid-item,
+    .bottle-desc {
+      font-size: 12px;
+    }
+
+    .avoid-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('routine', this)">
+    ⏰ दैनिक रूटीन (Daily Routine)
+  </button>
+  <button class="tab" onclick="showTab('grocery', this)">
+    🛒 महीने का राशन (Grocery List)
+  </button>
+  <button class="tab" onclick="showTab('soak', this)">
+    🥛 भिगोने का सेटअप (Soaking)
+  </button>
+</div>
+
+<!-- PANEL 1: ROUTINE -->
+<div id="panel-routine" class="panel active">
+  <div class="timeline">
+    <div class="t-row">
+      <div class="t-time">6:00 – 6:30 AM</div>
+      <div class="t-line">
+        <div class="t-dot" style="background: #1d9e75"></div>
+        <div class="t-bar"></div>
+      </div>
+      <div class="t-content">
+        <div class="t-label">सुबह उठते ही — खाली पेट</div>
+        <div class="t-detail">
+          1 गिलास गुनगुना पानी + 1 चम्मच रातभर भिगोया हुआ मेथी दाना (या उसका
+          पानी) + 5 भीगे हुए बादाम और 1-2 अखरोट।
+        </div>
+        <div class="t-tags">
+          <span class="tag tag-teal">थायराइड सपोर्ट</span
+          ><span class="tag tag-amber">कोलेस्ट्रॉल कंट्रोल</span>
+        </div>
+        <div
+          class="t-detail"
+          style="
+            margin-top: 6px;
+            font-style: italic;
+            color: #b82d24;
+            font-weight: 500;
+          "
+        >
+          💡 नोट: यदि कोई थायराइड की दवा लेता है, तो उसे सबसे पहले खाली पेट
+          लें[cite: 1]। दवा के बाद 30-60 मिनट तक कुछ न खाएं[cite: 1]।
+        </div>
+      </div>
+    </div>
+
+    <!-- NEW MORNING WALK EXPANSION -->
+    <div class="t-row">
+      <div class="t-time">6:30 – 7:15 AM</div>
+      <div class="t-line">
+        <div class="t-dot" style="background: #639922"></div>
+        <div class="t-bar"></div>
+      </div>
+      <div class="t-content">
+        <div class="t-label">
+          सुबह की सैर / व्यायाम (Morning Walk / Exercise)
+        </div>
+        <div class="t-detail">
+          30–45 मिनट की तेज़ सैर (Brisk Walk) या हल्का योग[cite: 1]। सुबह की
+          ताज़ी हवा और धूप थायराइड के मेटाबॉलिज्म को बेहतर करने और कोलेस्ट्रॉल
+          कम करने में दोगुनी मदद करेगी।
+        </div>
+        <div class="t-tags">
+          <span class="tag tag-teal">मेटाबॉलिज्म बूस्ट</span
+          ><span class="tag tag-amber">हार्ट हेल्थ</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="t-row">
+      <div class="t-time">8:00 – 9:00 AM</div>
+      <div class="t-line">
+        <div class="t-dot" style="background: #534ab7"></div>
+        <div class="t-bar"></div>
+      </div>
+      <div class="t-content">
+        <div class="t-label">सुबह का नाश्ता (Breakfast)</div>
+        <div class="t-detail">
+          कोई एक चुनें: ओट्स उपमा / ज्वार या बाजरे का चीला / वेज दलिया / 2 अंडे
+          + सलाद (यदि खाते हों)[cite: 1]।
+        </div>
+        <div class="t-detail" style="margin-top: 4px; font-weight: 500">
+          साथ में: 1 कटोरी दही + 1 चम्मच भीगे हुए चिया सीड्स[cite: 1]।
+        </div>
+        <div class="t-tags">
+          <span class="tag tag-purple">हाई फाइबर</span
+          ><span class="tag tag-teal">प्रोटीन रिच</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="t-row">
+      <div class="t-time">11:00 AM</div>
+      <div class="t-line">
+        <div class="t-dot" style="background: #ef9f27"></div>
+        <div class="t-bar"></div>
+      </div>
+      <div class="t-content">
+        <div class="t-label">मिड-मॉर्निंग स्नैक</div>
+        <div class="t-detail">
+          1 मौसमी फल — सेब / अमरूद / पपीता / संतरा या मौसमी + 1 गिलास पानी[cite:
+          1]।
+        </div>
+        <div class="t-tags">
+          <span class="tag tag-amber">नेचुरल शुगर</span
+          ><span class="tag tag-blue">विटामिन्स</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="t-row">
+      <div class="t-time">1:00 – 2:00 PM</div>
+      <div class="t-line">
+        <div class="t-dot" style="background: #d85a30"></div>
+        <div class="t-bar"></div>
+      </div>
+      <div class="t-content">
+        <div class="t-label">दोपहर का भोजन (Lunch)</div>
+        <div class="t-detail">
+          2 रोटी (ज्वार / बाजरा / मल्टीग्रेन) या 1 कटोरी ब्राउन राइस[cite: 1]।
+        </div>
+        <div class="t-detail" style="margin-top: 4px">
+          साथ में: 1 कटोरी दाल + 1 कटोरी हरी सब्जी + बड़ा सलाद का कटोरा (खीरा,
+          गाजर, टमाटर) + 1 कटोरी दही[cite: 1]।
+        </div>
+        <div class="t-tags">
+          <span class="tag tag-coral">मुख्य भोजन</span
+          ><span class="tag tag-teal">संतुलित आहार</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="t-row">
+      <div class="t-time">5:00 PM</div>
+      <div class="t-line">
+        <div class="t-dot" style="background: #378add"></div>
+        <div class="t-bar"></div>
+      </div>
+      <div class="t-content">
+        <div class="t-label">शाम का नाश्ता</div>
+        <div class="t-detail">
+          ग्रीन टी या नींबू पानी (बिना चीनी) + भुना चना या मखाना + 2–3
+          अखरोट[cite: 1]।
+        </div>
+        <div class="t-tags">
+          <span class="tag tag-blue">एंटीऑक्सीडेंट्स</span
+          ><span class="tag tag-amber">गुड फैट्स</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="t-row">
+      <div class="t-time">6:00 – 7:00 PM</div>
+      <div class="t-line">
+        <div class="t-dot" style="background: #639922"></div>
+        <div class="t-bar"></div>
+      </div>
+      <div class="t-content">
+        <div class="t-label">शाम की वॉक (Evening Walk)</div>
+        <div class="t-detail">
+          30 मिनट की हल्की वॉक या परिवार के साथ समय बिताते हुए टहलना[cite: 1]।
+          दिन में दो बार एक्टिव रहने से कोलेस्ट्रॉल का स्तर तेज़ी से सुधरता
+          है[cite: 1]।
+        </div>
+        <div class="t-tags">
+          <span class="tag tag-teal">सक्रिय जीवनशैली</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="t-row">
+      <div class="t-time">8:00 – 9:00 PM</div>
+      <div class="t-line">
+        <div class="t-dot" style="background: #d4537e"></div>
+        <div class="t-bar"></div>
+      </div>
+      <div class="t-content">
+        <div class="t-label">रात का खाना (Dinner) — बिल्कुल हल्का रखें</div>
+        <div class="t-detail">
+          2 रोटी (ज्वार / बाजरा) + 1 कटोरी दाल या लो-फैट पनीर + 1 कटोरी सब्जी +
+          सलाद[cite: 1]।
+        </div>
+        <div
+          class="t-detail"
+          style="margin-top: 4px; font-style: italic; color: #b82d24"
+        >
+          ⚠️ रात के खाने में चावल, मिठाई और तली-भुनी चीजों से पूरी तरह परहेज
+          करें[cite: 1]।
+        </div>
+        <div class="t-tags"><span class="tag tag-coral">लाइट डिनर</span></div>
+      </div>
+    </div>
+
+    <div class="t-row">
+      <div class="t-time">10:00 PM</div>
+      <div class="t-line">
+        <div class="t-dot" style="background: #888780"></div>
+      </div>
+      <div class="t-content">
+        <div class="t-label">सोने से पहले</div>
+        <div class="t-detail">
+          1 गिलास गुनगुना पानी[cite: 1]। यदि भूख लगे तो आधा कप हल्दी वाला दूध
+          (बिना चीनी)[cite: 1]। **अगले दिन के लिए 3 कांच की बोतलें भिगोने रख
+          दें[cite: 1]।**
+        </div>
+        <div class="t-tags"><span class="tag tag-blue">अच्छी नींद</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tip-box">
+    <strong>पूरे परिवार के लिए स्वस्थ आदतें:</strong> रोज़ाना 2.5–3通 लीटर पानी
+    पिएं · हर मुख्य भोजन में सलाद खाएं · सप्ताह में 4–5 दिन मिलेट्स
+    (ज्वार/बाजरा) और 2–3 बार ही ब्राउन राइस लें · मैदा, सफेद ब्रेड, कोल्ड
+    ड्रिंक्स और पैकेट वाले नमकीन घर में न लाएं[cite: 1]।
+  </div>
+</div>
+
+<!-- PANEL 2: GROCERY -->
+<div id="panel-grocery" class="panel">
+  <div class="grocery-grid">
+    <div class="g-card">
+      <div class="g-head"><div class="g-title">🌾 अनाज और मिलेट्स</div></div>
+      <div class="g-item">
+        <span>ज्वार का आटा (Jowar)</span><span class="g-qty">5 किलो</span>
+      </div>
+      <div class="g-item">
+        <span>बाजरा का आटा (Bajra)</span><span class="g-qty">3 किलो</span>
+      </div>
+      <div class="g-item">
+        <span>ब्राउन राइस (Brown Rice)</span><span class="g-qty">5 किलो</span>
+      </div>
+      <div class="g-item">
+        <span>रोल्ड ओट्स (Rolled Oats)</span><span class="g-qty">2 किलो</span>
+      </div>
+      <div class="g-item">
+        <span>गेहूं का आटा (Whole Wheat)</span><span class="g-qty">5 किलो</span>
+      </div>
+      <div class="g-item">
+        <span>जौ का आटा या दाना (Barley)</span><span class="g-qty">1 किलो</span>
+      </div>
+    </div>
+
+    <div class="g-card">
+      <div class="g-head">
+        <div class="g-title">🍲 दालें और छोले/राजमा</div>
+      </div>
+      <div class="g-item">
+        <span>मूंग दाल</span><span class="g-qty">1 किलो</span>
+      </div>
+      <div class="g-item">
+        <span>मसूर दाल</span><span class="g-qty">1 किलो</span>
+      </div>
+      <div class="g-item">
+        <span>तूर / अरहर दाल</span><span class="g-qty">1 किलो</span>
+      </div>
+      <div class="g-item">
+        <span>चना दाल</span><span class="g-qty">1 किलो</span>
+      </div>
+      <div class="g-item">
+        <span>काला चना</span><span class="g-qty">1 किलो</span>
+      </div>
+      <div class="g-item">
+        <span>साबुत हरी मूंग</span><span class="g-qty">1 किलो</span>
+      </div>
+      <div class="g-item">
+        <span>राजमा / लोबिया</span><span class="g-qty">500 ग्राम</span>
+      </div>
+    </div>
+
+    <div class="g-card">
+      <div class="g-head"><div class="g-title">🌱 हेल्दी बीज (Seeds)</div></div>
+      <div class="g-item">
+        <span>चिया सीड्स (Chia Seeds)</span><span class="g-qty">500 ग्राम</span>
+      </div>
+      <div class="g-item">
+        <span>अलसी के बीज (Flax Seeds)</span
+        ><span class="g-qty">500 ग्राम</span>
+      </div>
+      <div class="g-item">
+        <span>मेथी दाना (Methi)</span><span class="g-qty">500 ग्राम</span>
+      </div>
+      <div class="g-item">
+        <span>कद्दू के बीज (Pumpkin)</span><span class="g-qty">250 ग्राम</span>
+      </div>
+      <div class="g-item">
+        <span>सूरजमुखी के बीज (Sunflower)</span
+        ><span class="g-qty">250 ग्राम</span>
+      </div>
+      <div class="g-item">
+        <span>तिल (Sesame Seeds)</span><span class="g-qty">250 ग्राम</span>
+      </div>
+    </div>
+
+    <div class="g-card">
+      <div class="g-head">
+        <div class="g-title">🥜 ड्राई फ्रूट्स और नट्स</div>
+      </div>
+      <div class="g-item">
+        <span>बादाम (Almonds)</span><span class="g-qty">1 किलो</span>
+      </div>
+      <div class="g-item">
+        <span>अखरोट (Walnuts)</span><span class="g-qty">500 ग्राम</span>
+      </div>
+      <div class="g-item">
+        <span>पिस्ता (बिना नमक)</span><span class="g-qty">250 ग्राम</span>
+      </div>
+      <div class="g-item">
+        <span>मूंगफली (कच्ची/भुनी)</span><span class="g-qty">500 ग्राम</span>
+      </div>
+      <div class="g-item">
+        <span>मखाना (Foxnuts)</span><span class="g-qty">500 ग्राम</span>
+      </div>
+    </div>
+
+    <div class="g-card">
+      <div class="g-head">
+        <div class="g-title">🫗 कुकिंग ऑयल (हेल्दी फैट्स)</div>
+      </div>
+      <div class="g-item">
+        <span>एक्स्ट्रा वर्जिन ऑलिव ऑयल</span><span class="g-qty">1 लीटर</span>
+      </div>
+      <div class="g-item">
+        <span>सरसों या मूंगफली तेल</span><span class="g-qty">5 लीटर</span>
+      </div>
+    </div>
+
+    <div class="g-card">
+      <div class="g-head">
+        <div class="g-title">🧂 मसाले और जरूरी सामान</div>
+      </div>
+      <div class="g-item">
+        <span>हल्दी पाउडर</span><span class="g-qty">250 ग्राम</span>
+      </div>
+      <div class="g-item">
+        <span>जीरा</span><span class="g-qty">250 ग्राम</span>
+      </div>
+      <div class="g-item">
+        <span>काली मिर्च</span><span class="g-qty">100 ग्राम</span>
+      </div>
+      <div class="g-item">
+        <span>दालचीनी</span><span class="g-qty">100 Gram</span>
+      </div>
+      <div class="g-item">
+        <span>अजवाइन</span><span class="g-qty">100 ग्राम</span>
+      </div>
+      <div class="g-item">
+        <span>आयोडीन युक्त नमक</span><span class="g-qty">1 किलो</span>
+      </div>
+      <div class="g-item">
+        <span>ग्रीन टी (Green Tea)</span><span class="g-qty">100 टी-बैग्स</span>
+      </div>
+    </div>
+
+    <div class="g-card">
+      <div class="g-head">
+        <div class="g-title">🥛 डेयरी और प्रोटीन स्रोत</div>
+      </div>
+      <div class="g-item">
+        <span>दही / छाछ (Low-Fat)</span><span class="g-qty">रोज़ाना</span>
+      </div>
+      <div class="g-item">
+        <span>पनीर (लो-फैट)</span><span class="g-qty">1–2 किलो/माह</span>
+      </div>
+      <div class="g-item">
+        <span>अंडे (यदि खाते हों)</span><span class="g-qty">60–90/माह</span>
+      </div>
+    </div>
+
+    <div class="g-card">
+      <div class="g-head">
+        <div class="g-title">🍎 फल (Fruits - साप्ताहिक लें)</div>
+      </div>
+      <div class="g-item">
+        <span>सेब (Apple)</span><span class="g-qty">~4 किलो/माह</span>
+      </div>
+      <div class="g-item">
+        <span>अमरूद (Guava)</span><span class="g-qty">~2 किलो/माह</span>
+      </div>
+      <div class="g-item">
+        <span>संतरा / मौसमी</span><span class="g-qty">~3 किलो/माह</span>
+      </div>
+      <div class="g-item">
+        <span>पपीता (Papaya)</span><span class="g-qty">4–5 पीस/माह</span>
+      </div>
+      <div class="g-item">
+        <span>अनार (Pomegranate)</span><span class="g-qty">~2 किलो/माह</span>
+      </div>
+    </div>
+  </div>
+
+  <p class="section-title">🥦 सब्जियां — हर हफ्ते ताज़ी खरीदें</p>
+  <div style="display: flex; flex-wrap: wrap; gap: 6px">
+    <span class="tag tag-teal">पालक</span
+    ><span class="tag tag-teal">मेथी पत्ता</span
+    ><span class="tag tag-teal">लौकी</span><span class="tag tag-teal">तोरी</span
+    ><span class="tag tag-teal">करेला</span
+    ><span class="tag tag-teal">गाजर</span
+    ><span class="tag tag-teal">चुकंदर</span
+    ><span class="tag tag-teal">खीरा</span
+    ><span class="tag tag-teal">टमाटर</span
+    ><span class="tag tag-teal">प्याज</span
+    ><span class="tag tag-teal">लहसुन</span
+    ><span class="tag tag-teal">शिमला मिर्च</span
+    ><span class="tag tag-teal">कद्दू</span
+    ><span class="tag tag-teal">बीन्स</span>
+  </div>
+
+  <p class="section-title">❌ घर से पूरी तरह हटाएं (Avoid List)</p>
+  <div class="avoid-grid">
+    <div class="avoid-item">✖ मैदा</div>
+    <div class="avoid-item">✖ सफेद ब्रेड</div>
+    <div class="avoid-item">✖ कोल्ड ड्रिंक्स</div>
+    <div class="avoid-item">✖ बिस्कुट / नमकीन</div>
+    <div class="avoid-item">✖ समोसा / कचौड़ी (Fried)</div>
+    <div class="avoid-item">✖ ज्यादा चीनी / मिठाई</div>
+    <div class="avoid-item">✖ पैकेट वाले प्रोसेस्ड फूड्स</div>
+    <div class="avoid-item">✖ वनस्पति घी / डालडा</div>
+  </div>
+</div>
+
+<!-- PANEL 3: SOAKING -->
+<div id="panel-soak" class="panel">
+  <p
+    style="
+      font-size: 14px;
+      color: #444;
+      margin-bottom: 1.5rem;
+      font-weight: 500;
+    "
+  >
+    रात को सोने से पहले 3 कांच की बोतल/जार सेट कर लें — सुबह सेहत का डोज़ तैयार
+    मिलेगा।
+  </p>
+
+  <div class="bottles">
+    <div class="bottle-card" style="border-color: #9fe1cb; background: #e1f5ee">
+      <div class="bottle-num" style="color: #0f6e56">बोतल 1</div>
+      <div class="bottle-name" style="color: #085041">चिया सीड्स (Chia)</div>
+      <div class="bottle-desc" style="color: #0f6e56">
+        1 छोटा चम्मच, 1 गिलास पानी में।<br />सुबह यह जेल बन जाएगा, इसे नाश्ते के
+        साथ या पहले पिएं।
+      </div>
+    </div>
+    <div class="bottle-card" style="border-color: #fac775; background: #faeeda">
+      <div class="bottle-num" style="color: #854f0b">बोतल 2</div>
+      <div class="bottle-name" style="color: #633806">मेथी दाना (Methi)</div>
+      <div class="bottle-desc" style="color: #854f0b">
+        1 छोटा चम्मच, 1 गिलास पानी में।<br />सुबह पानी छानकर पिएं और दाने चबाकर
+        खाएं।
+      </div>
+    </div>
+    <div class="bottle-card" style="border-color: #cecbf6; background: #eeedfe">
+      <div class="bottle-num" style="color: #534ab7">बोतल 3</div>
+      <div class="bottle-name" style="color: #3c3489">बादाम + अखरोट</div>
+      <div class="bottle-desc" style="color: #534ab7">
+        15–20 बादाम + 6–8 अखरोट पानी में।<br />सुबह बादाम का छिलका उतारकर पूरे
+        परिवार में बांटकर खाएं।
+      </div>
+    </div>
+  </div>
+
+  <div class="tip-box" style="margin-top: 1.5rem">
+    <strong>बोतलों के लिए क्या खरीदें?</strong> 3 कांच (Glass) या स्टेनलेस स्टील
+    के एयरटाइट जार/बोतलें लें। प्लास्टिक की बोतलों का इस्तेमाल बिल्कुल न करें।
+    इन्हें रात को 9-10 बजे के आसपास भिगो दें।
+  </div>
+
+  <p class="section-title">💡 भिगोकर खाना क्यों जरूरी है? (Benefits)</p>
+  <div
+    style="
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+    "
+  >
+    <div
+      style="
+        background: #f9f9f9;
+        border-radius: 6px;
+        padding: 12px;
+        font-size: 13px;
+        color: #333;
+      "
+    >
+      <strong style="color: #0f6e56">मेथी दाना:</strong> बैड (LDL) कोलेस्ट्रॉल
+      कम करता है, ब्लड शुगर नियंत्रित करता है और पाचन सुधारता है।
+    </div>
+    <div
+      style="
+        background: #f9f9f9;
+        border-radius: 6px;
+        padding: 12px;
+        font-size: 13px;
+        color: #333;
+      "
+    >
+      <strong style="color: #534ab7">चिया सीड्स:</strong> ओमेगा-3 फैटी एसिड से
+      भरपूर, जो नसों की सूजन घटाता है और दिल को दुरुस्त रखता है।
+    </div>
+    <div
+      style="
+        background: #f9f9f9;
+        border-radius: 6px;
+        padding: 12px;
+        font-size: 13px;
+        color: #333;
+      "
+    >
+      <strong style="color: #854f0b">भीगे बादाम:</strong> भिगोने से बादाम के
+      पोषक तत्व शरीर आसानी से सोख पाता है। यह कोलेस्ट्रॉल कम करने में मददगार है।
+    </div>
+    <div
+      style="
+        background: #f9f9f9;
+        border-radius: 6px;
+        padding: 12px;
+        font-size: 13px;
+        color: #333;
+      "
+    >
+      <strong style="color: #993c1d">भीगे अखरोट:</strong> यह थायराइड ग्रंथि
+      (Thyroid gland) के सुचारू कामकाज और मेटाबॉलिज्म को बढ़ाने के लिए बेहतरीन
+      गुड फैट है।
+    </div>
+  </div>
+</div>
+
+<script>
+  function showTab(tabId, el) {
+    document
+      .querySelectorAll(".panel")
+      .forEach((p) => p.classList.remove("active"));
+    document
+      .querySelectorAll(".tab")
+      .forEach((t) => t.classList.remove("active"));
+    document.getElementById("panel-" + tabId).classList.add("active");
+    el.classList.add("active");
+  }
+</script>
