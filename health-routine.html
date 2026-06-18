@@ -1,4 +1,9 @@
+<meta name="theme-color" content="#1d9e75" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Health Checklist" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="manifest" href="./manifest.webmanifest" />
 
 <style>
   * {
@@ -29,6 +34,39 @@
     transition: all 0.15s;
     min-height: 44px;
     white-space: nowrap;
+  }
+  .check-item {
+    cursor: pointer;
+    transition: opacity 0.15s ease, filter 0.15s ease, background 0.15s ease;
+    border-radius: 8px;
+  }
+
+  .check-item:focus-visible {
+    outline: 2px solid #1d9e75;
+    outline-offset: 2px;
+  }
+
+  .check-item.checked {
+    opacity: 0.6;
+    filter: grayscale(40%);
+    background: repeating-linear-gradient(
+      -45deg,
+      rgba(120, 120, 120, 0.08) 0 10px,
+      rgba(120, 120, 120, 0.16) 10px 20px
+    );
+  }
+
+  .check-item.checked .t-label,
+  .check-item.checked .t-detail,
+  .check-item.checked .g-title,
+  .check-item.checked .g-item span,
+  .check-item.checked .g-qty,
+  .check-item.checked .bottle-name,
+  .check-item.checked .bottle-desc,
+  .check-item.checked.avoid-item,
+  .check-item.checked strong {
+    text-decoration: line-through;
+    text-decoration-thickness: 1.5px;
   }
   .tab.active {
     background: #1d9e75;
@@ -945,5 +983,99 @@
       .forEach((t) => t.classList.remove("active"));
     document.getElementById("panel-" + tabId).classList.add("active");
     el.classList.add("active");
+  }
+
+  const CHECKLIST_STORAGE_PREFIX = "daily-health-checklist:";
+
+  function getTodayDateKey() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  function getStorageKeyForToday() {
+    return CHECKLIST_STORAGE_PREFIX + getTodayDateKey();
+  }
+
+  function saveDailyChecklist(state) {
+    localStorage.setItem(getStorageKeyForToday(), JSON.stringify(state));
+  }
+
+  function loadDailyChecklist() {
+    try {
+      const raw = localStorage.getItem(getStorageKeyForToday());
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  }
+
+  function getChecklistTargets() {
+    return Array.from(
+      document.querySelectorAll(
+        "#panel-routine .t-row, #panel-grocery .g-item, #panel-grocery .avoid-item, #panel-soak .bottle-card"
+      )
+    );
+  }
+
+  function initializeChecklist() {
+    const state = loadDailyChecklist();
+    const targets = getChecklistTargets();
+
+    targets.forEach((el, index) => {
+      const id = "item-" + (index + 1);
+      el.dataset.checkId = id;
+      el.classList.add("check-item");
+      el.setAttribute("role", "checkbox");
+      el.setAttribute("tabindex", "0");
+
+      if (state[id]) {
+        el.classList.add("checked");
+        el.setAttribute("aria-checked", "true");
+      } else {
+        el.setAttribute("aria-checked", "false");
+      }
+    });
+  }
+
+  function persistFromDom() {
+    const nextState = {};
+    getChecklistTargets().forEach((el) => {
+      if (el.classList.contains("checked")) {
+        nextState[el.dataset.checkId] = true;
+      }
+    });
+    saveDailyChecklist(nextState);
+  }
+
+  function toggleChecklistItem(el) {
+    el.classList.toggle("checked");
+    el.setAttribute(
+      "aria-checked",
+      el.classList.contains("checked") ? "true" : "false"
+    );
+    persistFromDom();
+  }
+
+  document.addEventListener("click", (event) => {
+    const el = event.target.closest(".check-item");
+    if (!el) return;
+    toggleChecklistItem(el);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    const el = event.target.closest(".check-item");
+    if (!el) return;
+    event.preventDefault();
+    toggleChecklistItem(el);
+  });
+
+  initializeChecklist();
+
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker
+        .register("./sw.js")
+        .catch((error) => console.error("Service worker registration failed:", error));
+    });
   }
 </script>
